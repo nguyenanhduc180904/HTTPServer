@@ -1,9 +1,12 @@
 import java.io.*;
 import java.net.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class SimpleHttpServer {
 
     private static Router router = new Router();
+    private static final int THREAD_POOL_SIZE = 200;
 
     public static void main(String[] args) throws IOException {
         // Đăng ký các route
@@ -16,17 +19,26 @@ public class SimpleHttpServer {
         ServerSocket serverSocket = new ServerSocket(port);
         System.out.println("Server đang chạy tại http://localhost:" + port);
 
+        // Tạo thread pool cố định 20 thread để xử lý request
+        ExecutorService threadPool = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
+
         while (true) {
             Socket clientSocket = serverSocket.accept();
-            System.out.println("Có client kết nối: " + clientSocket.getInetAddress());
 
-            try {
-                handleClient(clientSocket);
-            } catch (IOException e) {
-                System.out.println("Lỗi khi xử lý request: " + e.getMessage());
-            } finally {
-                clientSocket.close(); // đảm bảo socket luôn được đóng dù thành công hay lỗi
-            }
+            // Giao việc xử lý client cho thread pool, KHÔNG chờ xử lý xong
+            threadPool.submit(() -> {
+                try {
+                    handleClient(clientSocket);
+                } catch (IOException e) {
+                    System.out.println("Lỗi khi xử lý request: " + e.getMessage());
+                } finally {
+                    try {
+                        clientSocket.close();
+                    } catch (IOException e) {
+                        System.out.println("Lỗi khi đóng socket: " + e.getMessage());
+                    }
+                }
+            });
         }
     }
 
@@ -35,7 +47,7 @@ public class SimpleHttpServer {
         BufferedReader reader = new BufferedReader(new InputStreamReader(input));
 
         HttpRequest request = HttpRequestParser.parse(reader);
-        System.out.println(request);
+        System.out.println(Thread.currentThread().getName() + " xử lý: " + request.getPath());
 
         HttpResponse response = router.route(request);
 
