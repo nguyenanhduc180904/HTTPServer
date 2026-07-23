@@ -1,3 +1,6 @@
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -5,7 +8,7 @@ public class HttpResponse {
     private int statusCode;
     private String statusText;
     private Map<String, String> headers = new LinkedHashMap<>();
-    private String body = "";
+    private byte[] body = new byte[0];
 
     public HttpResponse(int statusCode, String statusText) {
         this.statusCode = statusCode;
@@ -14,15 +17,21 @@ public class HttpResponse {
 
     public HttpResponse setHeader(String key, String value) {
         headers.put(key, value);
-        return this; // cho phép gọi nối tiếp (method chaining)
-    }
-
-    public HttpResponse setBody(String body) {
-        this.body = body;
         return this;
     }
 
-    // Các factory method tiện dụng để tạo response nhanh
+    // Set body dạng text (tiện dụng cho HTML/JSON/plain text)
+    public HttpResponse setBody(String bodyText) {
+        this.body = bodyText.getBytes(StandardCharsets.UTF_8);
+        return this;
+    }
+
+    // Set body dạng bytes thô (dùng cho file binary: ảnh, pdf...)
+    public HttpResponse setBody(byte[] bodyBytes) {
+        this.body = bodyBytes;
+        return this;
+    }
+
     public static HttpResponse ok(String body) {
         return new HttpResponse(200, "OK")
                 .setHeader("Content-Type", "text/plain")
@@ -53,21 +62,21 @@ public class HttpResponse {
                 .setBody(message);
     }
 
-    // Chuyển toàn bộ response thành raw HTTP text để ghi ra socket
-    public String toRawResponse() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("HTTP/1.1 ").append(statusCode).append(" ").append(statusText).append("\r\n");
+    // Ghi toàn bộ response (header + body) ra OutputStream dưới dạng bytes
+    public void writeTo(OutputStream out) throws IOException {
+        headers.put("Content-Length", String.valueOf(body.length));
 
-        // Tự động set Content-Length dựa theo body thực tế
-        headers.put("Content-Length", String.valueOf(body.getBytes().length));
-
+        StringBuilder headerBuilder = new StringBuilder();
+        headerBuilder.append("HTTP/1.1 ").append(statusCode).append(" ").append(statusText).append("\r\n");
         for (Map.Entry<String, String> entry : headers.entrySet()) {
-            sb.append(entry.getKey()).append(": ").append(entry.getValue()).append("\r\n");
+            headerBuilder.append(entry.getKey()).append(": ").append(entry.getValue()).append("\r\n");
         }
+        headerBuilder.append("\r\n");
 
-        sb.append("\r\n"); // dòng trống phân tách header/body
-        sb.append(body);
-
-        return sb.toString();
+        // Ghi phần header dưới dạng bytes (dùng US-ASCII vì header luôn là ASCII chuẩn)
+        out.write(headerBuilder.toString().getBytes(StandardCharsets.US_ASCII));
+        // Ghi phần body dưới dạng bytes thô
+        out.write(body);
+        out.flush();
     }
 }

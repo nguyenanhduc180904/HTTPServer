@@ -40,8 +40,6 @@ public class SimpleHttpServer {
         HttpResponse response = router.route(request);
 
         OutputStream output = clientSocket.getOutputStream();
-        PrintWriter writer = new PrintWriter(output, true);
-        writer.print(response.toRawResponse());
-        writer.flush();
+        response.writeTo(output);
     }
 }

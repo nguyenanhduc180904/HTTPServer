@@ -14,11 +14,16 @@ public class Router {
         String key = buildKey(request.getMethod(), request.getPath());
         HttpHandler handler = routes.get(key);
 
-        if (handler == null) {
-            return HttpResponse.notFound();
+        if (handler != null) {
+            return handler.handle(request);
         }
 
-        return handler.handle(request);
+        // Nếu không có route khớp và là GET request, thử tìm file tĩnh
+        if (request.getMethod().equalsIgnoreCase("GET")) {
+            return StaticFileHandler.serve(request.getPath());
+        }
+
+        return HttpResponse.notFound();
     }
 
     private String buildKey(String method, String path) {
