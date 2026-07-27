@@ -20,13 +20,11 @@ public class HttpResponse {
         return this;
     }
 
-    // Set body dạng text (tiện dụng cho HTML/JSON/plain text)
     public HttpResponse setBody(String bodyText) {
         this.body = bodyText.getBytes(StandardCharsets.UTF_8);
         return this;
     }
 
-    // Set body dạng bytes thô (dùng cho file binary: ảnh, pdf...)
     public HttpResponse setBody(byte[] bodyBytes) {
         this.body = bodyBytes;
         return this;
@@ -62,7 +60,6 @@ public class HttpResponse {
                 .setBody(message);
     }
 
-    // Ghi toàn bộ response (header + body) ra OutputStream dưới dạng bytes
     public void writeTo(OutputStream out) throws IOException {
         headers.put("Content-Length", String.valueOf(body.length));
 
@@ -73,9 +70,7 @@ public class HttpResponse {
         }
         headerBuilder.append("\r\n");
 
-        // Ghi phần header dưới dạng bytes (dùng US-ASCII vì header luôn là ASCII chuẩn)
         out.write(headerBuilder.toString().getBytes(StandardCharsets.US_ASCII));
-        // Ghi phần body dưới dạng bytes thô
         out.write(body);
         out.flush();
     }

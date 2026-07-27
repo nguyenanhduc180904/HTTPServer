@@ -2,7 +2,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Router {
-    // Key dạng "GET /hello" -> Handler tương ứng
     private Map<String, HttpHandler> routes = new HashMap<>();
 
     public void register(String method, String path, HttpHandler handler) {
@@ -18,7 +17,6 @@ public class Router {
             return handler.handle(request);
         }
 
-        // Nếu không có route khớp và là GET request, thử tìm file tĩnh
         if (request.getMethod().equalsIgnoreCase("GET")) {
             return StaticFileHandler.serve(request.getPath());
         }

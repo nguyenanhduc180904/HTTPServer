@@ -9,7 +9,6 @@ public class SimpleHttpServer {
     private static final int THREAD_POOL_SIZE = 200;
 
     public static void main(String[] args) throws IOException {
-        // Đăng ký các route
         router.register("GET", "/", req -> HttpResponse.html("<h1>Trang chủ</h1>"));
         router.register("GET", "/hello", req -> HttpResponse.ok("Hello World"));
         router.register("GET", "/users", req -> HttpResponse.html("<ul><li>User 1</li><li>User 2</li></ul>"));
@@ -19,13 +18,11 @@ public class SimpleHttpServer {
         ServerSocket serverSocket = new ServerSocket(port);
         System.out.println("Server đang chạy tại http://localhost:" + port);
 
-        // Tạo thread pool cố định 20 thread để xử lý request
         ExecutorService threadPool = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
 
         while (true) {
             Socket clientSocket = serverSocket.accept();
 
-            // Giao việc xử lý client cho thread pool, KHÔNG chờ xử lý xong
             threadPool.submit(() -> {
                 try {
                     handleClient(clientSocket);

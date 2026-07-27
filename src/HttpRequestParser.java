@@ -6,7 +6,6 @@ public class HttpRequestParser {
     public static HttpRequest parse(BufferedReader reader) throws IOException {
         HttpRequest request = new HttpRequest();
 
-        // 1. Đọc request line: "GET /path HTTP/1.1"
         String requestLine = reader.readLine();
         if (requestLine == null || requestLine.isEmpty()) {
             throw new IOException("Request rỗng hoặc không hợp lệ");
@@ -17,11 +16,10 @@ public class HttpRequestParser {
             throw new IOException("Request line không đúng định dạng: " + requestLine);
         }
 
-        request.setMethod(parts[0]);       // GET
-        request.setPath(parts[1]);         // /path
-        request.setHttpVersion(parts[2]);  // HTTP/1.1
+        request.setMethod(parts[0]);
+        request.setPath(parts[1]);
+        request.setHttpVersion(parts[2]);
 
-        // 2. Đọc headers cho đến khi gặp dòng trống
         String headerLine;
         while ((headerLine = reader.readLine()) != null && !headerLine.isEmpty()) {
             int colonIndex = headerLine.indexOf(":");
@@ -32,7 +30,6 @@ public class HttpRequestParser {
             }
         }
 
-        // 3. Đọc body dựa vào Content-Length (nếu có)
         String contentLengthStr = request.getHeader("Content-Length");
         if (contentLengthStr != null) {
             int contentLength = Integer.parseInt(contentLengthStr);

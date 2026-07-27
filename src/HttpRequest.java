@@ -8,7 +8,6 @@ public class HttpRequest {
     private Map<String, String> headers = new HashMap<>();
     private String body;
 
-    // Getters
     public String getMethod() { return method; }
     public String getPath() { return path; }
     public String getHttpVersion() { return httpVersion; }
@@ -16,7 +15,6 @@ public class HttpRequest {
     public String getHeader(String name) { return headers.get(name); }
     public String getBody() { return body; }
 
-    // Setters (dùng nội bộ khi parse)
     public void setMethod(String method) { this.method = method; }
     public void setPath(String path) { this.path = path; }
     public void setHttpVersion(String httpVersion) { this.httpVersion = httpVersion; }

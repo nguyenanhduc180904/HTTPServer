@@ -28,7 +28,7 @@ public class StaticFileHandler {
 
             return new HttpResponse(200, "OK")
                     .setHeader("Content-Type", contentType)
-                    .setBody(fileBytes); // dùng overload nhận byte[] — giữ nguyên dữ liệu gốc
+                    .setBody(fileBytes);
 
         } catch (IOException e) {
             return HttpResponse.serverError("Lỗi đọc file: " + e.getMessage());
